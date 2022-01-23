@@ -857,6 +857,10 @@ window.onload = () => {
         document.querySelectorAll('.gui>.item').forEach(e => e.classList.add('active'));
         if (!smallerScreen.matches)
             content.focus();
+
+        var url = new URL(window.location.href);
+        url.searchParams.set("data", "");
+        window.history.pushState(null, null, url);
     })
 
     document.querySelectorAll('.img').forEach(e => {
@@ -896,9 +900,11 @@ window.onload = () => {
     if (onlyEmbed) document.querySelector('.side1')?.remove();
 
     document.getElementById("send").onclick = async function () {
-        console.log("Works");
+
+        let postUrl = "https://bot.blitz-esports.ml/embed/post";
+
         try {
-            let req = await fetch("http://localhost:3634/embed/post", {
+            let req = await fetch(postUrl, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -907,12 +913,12 @@ window.onload = () => {
                 body: JSON.stringify({ token: getParameterByName("token"), data: json })
             });
             let data = await req.json();
-        
+
             if (data.status) {
                 alert("Success: " + data.message);
             }
             else {
-                alert("Error: " + data.message);
+                alert("Error: " + data.message || "Unknown error");
             }
 
         } catch (e) {
