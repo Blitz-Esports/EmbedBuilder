@@ -595,39 +595,48 @@ window.onload = () => {
             last.scrollIntoView({ behavior: "smooth", block: "center" });
         }
 
-        let upload = form => {
+        let upload = (form, base64) => {
             let formData = new FormData(form);
             formData.append('file', files.files);
             formData.append('datetime', '10m');
-            fetch('https://tempfile.site/api/files', {
+
+            fetch('https://cdn.blitz-esports.ml/upload', {
                 method: 'POST',
-                body: formData,
+                body: JSON.stringify({
+                    source: base64
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Access-Control-Allow-Origin": "*"
+                }
             })
                 .then(res => res.json())
                 .then(res => {
+                    console.log(res)
                     let browse = form.closest('.edit').querySelector('.browse');
                     browse.classList.remove('loading');
-                    if (!res.ok) {
-                        console.log(res.error);
+                    if (!res.status) {
+                        console.log(res.message);
                         browse.classList.add('error');
                         return setTimeout(() => browse.classList.remove('error'), 5000)
                     }
                     imgSrc(form.previousElementSibling.querySelector('.editIcon > .imgParent') || form.closest('.editIcon').querySelector('.imgParent'), res.link);
                     let input = form.previousElementSibling.querySelector('.editIcon > input') || form.previousElementSibling;
-                    input.value = res.link;
-                    if (input === authorLink) ((json.embed ??= {}).author ??= {}).icon_url = res.link;
-                    else if (input === thumbLink) ((json.embed ??= {}).thumbnail ??= {}).url = res.link;
-                    else if (input === imgLink) ((json.embed ??= {}).image ??= {}).url = res.link;
-                    else ((json.embed ??= {}).footer ??= {}).icon_url = res.link;
+                    input.value = res.data.url;
+                    if (input === authorLink) ((json.embed ??= {}).author ??= {}).icon_url = res.data.url;
+                    else if (input === thumbLink) ((json.embed ??= {}).thumbnail ??= {}).url = res.data.url;
+                    else if (input === imgLink) ((json.embed ??= {}).image ??= {}).url = res.data.url;
+                    else ((json.embed ??= {}).footer ??= {}).icon_url = res.data.url;
                     update(json);
-                    console.info(`Image (${res.link}) will be deleted in 10 minutes. To delete it now, go to ${res.link.replace('/files', '/del')} and enter this code: ${res.authkey}`);
-                }).catch(err => error(`Request to tempfile.site failed with error: ${err}`, 5000))
+                    console.info(`Image (${res.data.url}) uploaded successfully.`);
+                }).catch(err => error(`Request to cdn failed with error: ${err}`, 5000))
         }
 
         let files = document.querySelectorAll('input[type="file"]');
-        files.forEach(f => f.addEventListener('change', e => {
+        files.forEach(f => f.addEventListener('change', async e => {
             if (f.files) {
-                upload(e.target.parentElement);
+                const base64 = await toBase64(f.files[0]).catch(() => null);
+                upload(e.target.parentElement, base64);
                 e.target.closest('.edit').querySelector('.browse').classList.add('loading');
             }
         }))
@@ -937,3 +946,10 @@ function getParameterByName(name, url = window.location.href) {
     if (!results[2]) return '';
     return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
+
+const toBase64 = file => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+});
