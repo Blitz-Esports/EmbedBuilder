@@ -629,7 +629,7 @@ window.onload = () => {
                     else ((json.embed ??= {}).footer ??= {}).icon_url = res.data.url;
                     update(json);
                     console.info(`Image (${res.data.url}) uploaded successfully.`);
-                }).catch(err => error(`Request to cdn failed with error: ${err}`, 5000))
+                }).catch(err => error(`Request to cdn failed with error: ${err}.`, 5000))
         }
 
         let files = document.querySelectorAll('input[type="file"]');
