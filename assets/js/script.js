@@ -595,21 +595,21 @@ window.onload = () => {
             last.scrollIntoView({ behavior: "smooth", block: "center" });
         }
 
-        let upload = (form, base64) => {
-            let formData = new FormData(form);
-            formData.append('file', files.files);
-            formData.append('datetime', '10m');
+        let upload = (form, buffer) => {
 
-            fetch('https://cdn.blitz-esports.ml/upload', {
-                method: 'POST',
+            fetch("https://cdn.blitz-esports.ml/upload", {
+                method: "POST",
                 body: JSON.stringify({
-                    source: base64
+                    source: buffer.split(",")[1],
+                    file_path: "embed"
                 }),
                 headers: {
-                    'Content-Type': 'application/json'
+                    "Content-Type": "application/json"
                 }
             })
-                .then(res => res.json())
+                .then(res => {
+                    return res.json()
+                })
                 .then(res => {
                     console.log(res)
                     let browse = form.closest('.edit').querySelector('.browse');
@@ -619,7 +619,7 @@ window.onload = () => {
                         browse.classList.add('error');
                         return setTimeout(() => browse.classList.remove('error'), 5000)
                     }
-                    imgSrc(form.previousElementSibling.querySelector('.editIcon > .imgParent') || form.closest('.editIcon').querySelector('.imgParent'), res.link);
+                    imgSrc(form.previousElementSibling.querySelector('.editIcon > .imgParent') || form.closest('.editIcon').querySelector('.imgParent'), res.data.url);
                     let input = form.previousElementSibling.querySelector('.editIcon > input') || form.previousElementSibling;
                     input.value = res.data.url;
                     if (input === authorLink) ((json.embed ??= {}).author ??= {}).icon_url = res.data.url;
@@ -628,7 +628,10 @@ window.onload = () => {
                     else ((json.embed ??= {}).footer ??= {}).icon_url = res.data.url;
                     update(json);
                     console.info(`Image (${res.data.url}) uploaded successfully.`);
-                }).catch(err => error(`Request to cdn failed with error: ${err}.`, 5000))
+                }).catch(err => {
+                    error(`Request to cdn failed with error: ${err}.`, 5000);
+                    console.log(err)
+                })
         }
 
         let files = document.querySelectorAll('input[type="file"]');
@@ -909,10 +912,10 @@ window.onload = () => {
 
     document.getElementById("send").onclick = async function () {
 
-        let postUrl = "https://bot.blitz-esports.ml/embed/post";
+        let _botAPI = "https://bot.blitz-esports.ml/embed/post";
 
         try {
-            let req = await fetch(postUrl, {
+            let req = await fetch(_botAPI, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
