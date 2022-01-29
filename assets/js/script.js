@@ -606,8 +606,7 @@ window.onload = () => {
                     source: base64
                 }),
                 headers: {
-                    'Content-Type': 'application/json',
-                    "Access-Control-Allow-Origin": "*"
+                    'Content-Type': 'application/json'
                 }
             })
                 .then(res => res.json())
