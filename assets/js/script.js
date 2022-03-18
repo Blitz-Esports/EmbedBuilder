@@ -912,7 +912,7 @@ window.onload = () => {
 
     document.getElementById("send").onclick = async function () {
 
-        let _botAPI = "https://bot.blitz-esports.ml/embed/post";
+        let _botAPI = "http://bot.blitz-esports.ml:8106/embed/post";
 
         try {
             let req = await fetch(_botAPI, {
